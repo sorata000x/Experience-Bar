@@ -13,8 +13,3 @@ class PicButton(QAbstractButton):
 
     def sizeHint(self):
         return self.pixmap.size()
-
-
-class ProgressBar(QProgressBar):
-    def __init__(self, *args, **kwargs):
-        super(ProgressBar, self).__init__(*args, **kwargs)

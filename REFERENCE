@@ -21,3 +21,6 @@ Reference
     Stackoverflow: Qt Widget with Transparent Background: gdw2 | https://stackoverflow.com/questions/7667552/qt-widget-with-transparent-background
     NEXON: Maplestory | https://maplestory.nexon.net/game/beginners-guide/adventures
     QWidget Class Reference | https://www.riverbankcomputing.com/static/Docs/PyQt4/qwidget.html#setGeometry-2
+    PyQt5 Label – Adding Opacity effect | https://www.geeksforgeeks.org/pyqt5-label-adding-opacity-effect/
+    Stackoverflow: How can I change the cursor shape with PyQt? | https://stackoverflow.com/questions/8218900/how-can-i-change-the-cursor-shape-with-pyqt
+    Pynput: Handling the mouse | https://pynput.readthedocs.io/en/latest/mouse.html

@@ -8,25 +8,41 @@ StyleSheet = '''
 #ExpBar::chunk {
     background: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1,
                                 stop: 0 #e8fa48,
-                                stop: 0.3 #cfe600,
-                                stop: 0.7 #cfe600,
+                                stop: 0.5 #cfe600,
+                                stop: 0.6 #cfe600,
                                 stop: 1 #e8fa48       
                                 );
-    margin: 3px;
+    margin: 6px;
     border-radius: 5px;
 }
 
 #ExpLabel {
     text-align: center;
     background-color: rgba(0, 0, 0, 100);
+    border-radius: 0px;
+}
+
+#LevelLabel {
+    text-align: center;
+    background-color: rgba(0, 0, 0, 100);
     border-top-left-radius: 5px;
     border-bottom-left-radius: 5px;
 }
 
-#ExpLabel::chunk {
-    margin: 2px;
-    border-radius: 5px;
+#Overlay {
+    text-align: center;
+    background-color: rgba(0, 0, 0, 60);
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
 }
+
+#Overlay2 {
+    text-align: center;
+    background-color: #e8fa48;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+}
+
 
 
 #RedProgressBar {

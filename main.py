@@ -1,4 +1,7 @@
 """
+Might Helpful
+    Stackoverflow: Creating a pyqt5 text with a gradient color [closed] | https://stackoverflow.com/questions/68152680/creating-a-pyqt5-text-with-a-gradient-color
+
 Package
     PyQt6
     Pynput
@@ -14,7 +17,7 @@ To Do
 """
 
 import sys
-from PyQt6.QtCore import QTimer, QSize, Qt, QPoint
+from PyQt6.QtCore import QTimer, QSize, Qt, QPoint, QPropertyAnimation, QEasingCurve, QRectF, QObject, pyqtSignal
 from PyQt6.QtWidgets import (
     QMainWindow,
     QApplication,
@@ -26,46 +29,71 @@ from PyQt6.QtWidgets import (
     QStackedLayout,
     QGridLayout,
     QToolButton,
+    QGraphicsOpacityEffect
 )
-from PyQt6.QtGui import QPalette, QColor, QPainter, QPixmap, QIcon, QTransform
+from PyQt6.QtGui import QPalette, QColor, QPainter, QPixmap, QIcon, QTransform, QFont, QLinearGradient, QPen, \
+    QTextOption
 from widgets import *
 from pynput import mouse
 
 import stylesheet
+from time import sleep
 
 
 class ExpBar(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-        # EXP label
-        self.exp_label = ProgressBar(self, objectName="ExpLabel")
-        self.exp_label.setGeometry(0, 0, 40, 24)
-        palette = QPalette()
-        palette.setColor(QPalette.ColorRole.Text, QColor(250, 250, 250))
-        self.exp_label.setPalette(palette)
+        # ----- Level label -----
+        self.level_label = QWidget(self)
+        self.level_label.setObjectName('LevelLabel')
+        self.level_label.setGeometry(0, 0, 70, 30)
         self.text_label = QLabel(self)
-        self.text_label.setText('EXP')
-        self.text_label.setStyleSheet("font-size: 16pt; font-weight: bold; color: white;")
-        self.text_label.setGeometry(7, 0, 40, 24)
-        # EXP bar
-        self.exp_bar = ProgressBar(self, minimum=0, maximum=1000, objectName="ExpBar")
-        self.exp_bar.setValue(400)
-        percentage = self.exp_bar.value() / self.exp_bar.maximum() * 100
-        self.exp_bar.setFormat(f'{self.exp_bar.value()} [{percentage:.2f}%]')
-        self.exp_bar.setGeometry(40, 0, 1250, 24)
+        self.text_label.setText('Lv.101')
+        self.text_label.setStyleSheet("font-size: 20pt; font-weight: bold; color: #f5c722;")
+        self.text_label.setGeometry(10, 3, 60, 24)
+        # ------- EXP bar -------
+        self.exp_bar = QProgressBar(self)
+        self.exp_bar.setMinimum(0)
+        self.exp_bar.setMaximum(1000)
+        self.exp_bar.setObjectName("ExpBar")
+        self.exp_bar.setValue(0)
+        self.exp_bar.setFormat('')
+        self.exp_bar.setGeometry(70, 0, 1250, 30)
         palette = QPalette()
         palette.setColor(QPalette.ColorRole.Text, QColor(200, 200, 200))
         self.exp_bar.setPalette(palette)
+        self.anim = QPropertyAnimation(self.exp_bar, b"value")
+        self.anim.setEasingCurve(QEasingCurve.Type.OutCubic)
+        self.anim.setDuration(600)
+        # ------- Segments --------
+        self.segments = Segments(self)
+        self.segments.setGeometry(172, 0, 1300, 30)
 
     def increase(self):
-        self.exp_bar.setValue(self.exp_bar.value() + 10)
+        self.anim.setEndValue(self.exp_bar.value() + 100)
+        self.anim.start()
         percentage = self.exp_bar.value() / self.exp_bar.maximum() * 100
         self.exp_bar.setFormat(f'{self.exp_bar.value()} [{percentage:.2f}%]')
 
     def decrease(self):
-        self.exp_bar.setValue(self.exp_bar.value() - 10)
+        self.anim.setEndValue(self.exp_bar.value() - 100)
+        self.anim.start()
         percentage = self.exp_bar.value() / self.exp_bar.maximum() * 100
         self.exp_bar.setFormat(f'{self.exp_bar.value()} [{percentage:.2f}%]')
+
+
+class Segments(QWidget):
+    def __init__(self, parent=None):
+        super(Segments, self).__init__(parent)
+        self.addSegment()
+
+    def addSegment(self):
+        for i in range(9):
+            segment = QWidget(self)
+            segment.setGeometry(i*200, 0, 10, 30)
+            black_seg = QWidget(segment)
+            black_seg.setStyleSheet("background-color: rgba(150, 150, 150, 100); border-radius: 1px;")
+            black_seg.setGeometry(3, 6, 2, 18)
 
 
 class ExpBarWindow(QWidget):
@@ -87,7 +115,7 @@ class ExpBarWindow(QWidget):
         self.button.close()
         # Exp bar
         self.exp_bar = ExpBar(self)
-        self.exp_bar.setGeometry(10, 10, 1300, 24)
+        self.exp_bar.setGeometry(10, 0, 1300, 50)
 
     def mousePressEvent(self, event):
         """ Purpose: dragging window, close (hide) button. """
@@ -211,19 +239,38 @@ class AreaSelectWindow(QWidget):
 class MainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Window config
+        self.setWindowTitle('Option')
+        # Sub windows
+        # --- Experience bar window
         self.exp_bar_window = ExpBarWindow()
         self.exp_bar_window.show()
+        # --- Action window
         self.action_window = ActionWindow()
         self.action_window.show()
         self.action_window.plus_button.clicked.connect(self.exp_bar_window.exp_bar.increase)
         self.action_window.minus_button.clicked.connect(self.exp_bar_window.exp_bar.decrease)
-
+        # --- Area selection window
         self.area_select_window = AreaSelectWindow()
-
+        # Buttons
+        # --- Select click area button
         self.define_click_area_button = QPushButton(self)
-        self.define_click_area_button.setText('Select')
-        self.define_click_area_button.setGeometry(10, 10, 70, 30)
+        self.define_click_area_button.setText('Select Area')
+        self.define_click_area_button.setGeometry(10, 10, 100, 30)
         self.define_click_area_button.clicked.connect(self.select_area)
+        # --- Quit button
+        self.quit_button = QPushButton(self)
+        self.quit_button.setText('Quit')
+        self.quit_button.setGeometry(10, 50, 70, 30)
+        self.quit_button.clicked.connect(self.close)
+
+    # Windows
+
+    def select_area(self):
+        self.area_select_window.show()
+        app.setOverrideCursor(Qt.CursorShape.CrossCursor)
+
+    # Events
 
     def closeEvent(self, event):
         self.exp_bar_window.close()
@@ -232,26 +279,27 @@ class MainWindow(QMainWindow):
     def mousePressEvent(self, event):
         print(event.pos().x())
 
-    def select_area(self):
-        self.area_select_window.show()
-        app.setOverrideCursor(Qt.CursorShape.CrossCursor)
+
+class Signaller(QObject):
+    clicked_on_area = pyqtSignal()
+    def __init__(self):
+        super(Signaller, self).__init__()
+
+    def on_click_area(self):
+        self.clicked_on_area.emit()
 
 
 app = QApplication(sys.argv)
 app.setStyleSheet(stylesheet.StyleSheet)
 screen_size = app.primaryScreen().size()
+# Main window
 w = MainWindow()
-
-
-# not using
-eb_width = 1250
-eb_height = 50
-eb_x = int(screen_size.width() / 2 - eb_width / 2)
-eb_y = 700
-
-w.exp_bar_window.setGeometry(64, 780, 1365, 44)
-
+w.setGeometry(int(screen_size.width()/2 - 100), int(screen_size.height()/2 - 100), 200, 200)
+w.exp_bar_window.setGeometry(64, 750, 1365, 44)
 w.show()
+
+signaller = Signaller()
+signaller.clicked_on_area.connect(w.exp_bar_window.exp_bar.increase)
 
 # detect click on selected area
 def on_click(x, y, button, pressed):
@@ -261,7 +309,7 @@ def on_click(x, y, button, pressed):
         target_end_x = target_start_x + w.area_select_window.selected_area.width()
         target_end_y = target_start_y + w.area_select_window.selected_area.height()
         if target_start_x <= x <= target_end_x and target_start_y <= y <= target_end_y:
-            w.exp_bar_window.exp_bar.increase()
+            signaller.on_click_area()
 
 
 listener = mouse.Listener(on_click=on_click)
