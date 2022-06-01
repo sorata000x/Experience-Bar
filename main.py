@@ -34,10 +34,10 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import QPalette, QColor, QPainter, QPixmap, QIcon, QTransform, QFont, QLinearGradient, QPen, \
     QTextOption
 from widgets import *
+from utilities import *
 from pynput import mouse
 
 import stylesheet
-from time import sleep
 
 
 class ExpBar(QWidget):
@@ -192,7 +192,7 @@ class ActionWindow(QWidget):
 
 
 class AreaSelectWindow(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, connect_to, parent=None):
         super().__init__(parent)
         # Variable init
         self.start_x, self.start_y = 0, 0
@@ -205,6 +205,21 @@ class AreaSelectWindow(QWidget):
         # Select area
         self.selected_area = QWidget(self)
         self.selected_area.setObjectName('SelectedArea')
+        # Detect click on screen
+        signaller = Signaller()
+        signaller.clicked_on_area.connect(connect_to)
+
+        def on_click(x, y, button, pressed):
+            if not pressed:  # on release
+                target_start_x = w.area_select_window.selected_area.x()
+                target_start_y = w.area_select_window.selected_area.y()
+                target_end_x = target_start_x + w.area_select_window.selected_area.width()
+                target_end_y = target_start_y + w.area_select_window.selected_area.height()
+                if target_start_x <= x <= target_end_x and target_start_y <= y <= target_end_y:
+                    signaller.on_click_area()
+
+        listener = mouse.Listener(on_click=on_click)
+        listener.start()
 
     def mousePressEvent(self, event):
         self.start_x, self.start_y = event.pos().x(), event.pos().y()
@@ -251,7 +266,7 @@ class MainWindow(QMainWindow):
         self.action_window.plus_button.clicked.connect(self.exp_bar_window.exp_bar.increase)
         self.action_window.minus_button.clicked.connect(self.exp_bar_window.exp_bar.decrease)
         # --- Area selection window
-        self.area_select_window = AreaSelectWindow()
+        self.area_select_window = AreaSelectWindow(self.exp_bar_window.exp_bar.increase)
         # Buttons
         # --- Select click area button
         self.define_click_area_button = QPushButton(self)
@@ -280,42 +295,12 @@ class MainWindow(QMainWindow):
         print(event.pos().x())
 
 
-class Signaller(QObject):
-    clicked_on_area = pyqtSignal()
-    def __init__(self):
-        super(Signaller, self).__init__()
-
-    def on_click_area(self):
-        self.clicked_on_area.emit()
-
-
-app = QApplication(sys.argv)
-app.setStyleSheet(stylesheet.StyleSheet)
-screen_size = app.primaryScreen().size()
-# Main window
-w = MainWindow()
-w.setGeometry(int(screen_size.width()/2 - 100), int(screen_size.height()/2 - 100), 200, 200)
-w.exp_bar_window.setGeometry(64, 750, 1365, 44)
-w.show()
-
-signaller = Signaller()
-signaller.clicked_on_area.connect(w.exp_bar_window.exp_bar.increase)
-
-# detect click on selected area
-def on_click(x, y, button, pressed):
-    if not pressed:     # on release
-        target_start_x = w.area_select_window.selected_area.x()
-        target_start_y = w.area_select_window.selected_area.y()
-        target_end_x = target_start_x + w.area_select_window.selected_area.width()
-        target_end_y = target_start_y + w.area_select_window.selected_area.height()
-        if target_start_x <= x <= target_end_x and target_start_y <= y <= target_end_y:
-            signaller.on_click_area()
-
-
-listener = mouse.Listener(on_click=on_click)
-listener.start()
-# -------
-
-app.exec()
-
-
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    app.setStyleSheet(stylesheet.StyleSheet)
+    screen_size = app.primaryScreen().size()
+    w = MainWindow()
+    w.setGeometry(int(screen_size.width()/2 - 100), int(screen_size.height()/2 - 100), 200, 200)
+    w.exp_bar_window.setGeometry(64, 750, 1365, 44)
+    w.show()
+    app.exec()
