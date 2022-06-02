@@ -45,31 +45,6 @@ StyleSheet = '''
 
 
 
-#RedProgressBar {
-    text-align: center;
-}
-#RedProgressBar::chunk {
-    background-color: #F44336;
-}
-#GreenProgressBar {
-    min-height: 12px;
-    max-height: 12px;
-    border-radius: 6px;
-}
-#GreenProgressBar::chunk {
-    border-radius: 6px;
-    background-color: #009688;
-}
-#BlueProgressBar {
-    border: 2px solid #2196F3;
-    border-radius: 5px;
-    background-color: #E0E0E0;
-}
-#BlueProgressBar::chunk {
-    background-color: #2196F3;
-    width: 10px; 
-    margin: 0.5px;
-}
 
 #PlusButton {
     background-color: #a3d13f;
@@ -102,7 +77,24 @@ StyleSheet = '''
     border-radius: 5px;
 }
 
+#ActionWindowToggle {
+    background-color: rgba(0, 0, 0, 100);
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 8px;
+}
+
 QWidget#SelectedArea {
     background-color: rgba(0, 0, 0, 200);
+}
+
+QPushButton#OptionButton {
+    background-color: rgb(255, 255, 255);
+    border-radius: 8px;
+    border: 1px solid black;
+}
+
+QPushButton#OptionButton:hover {
+    border-radius: 8px;
+    border: 2px solid blue;
 }
 '''
