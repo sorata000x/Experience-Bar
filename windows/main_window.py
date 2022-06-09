@@ -5,7 +5,7 @@ from windows.action_window import ActionWindow
 from windows.area_select_window import AreaSelectWindow
 
 class MainWindow(QMainWindow):
-    def __init__(self, app):
+    def __init__(self, app, config):
         super().__init__()
         # Variable init
         self.app = app
@@ -15,7 +15,7 @@ class MainWindow(QMainWindow):
         self.setGeometry(int(screen_size.width()/2 - 100), int(screen_size.height()/2 - 100), 200, 200)
         # Sub windows
         # --- Experience bar window
-        self.exp_bar_window = ExpBarWindow()
+        self.exp_bar_window = ExpBarWindow(config)
         self.exp_bar_window.setGeometry(64, 750, 1365, 44)
         self.exp_bar_window.show()
         # --- Action window

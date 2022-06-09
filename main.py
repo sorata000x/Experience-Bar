@@ -23,9 +23,29 @@ from PyQt6.QtWidgets import QApplication
 from windows.main_window import MainWindow
 from stylesheet import StyleSheet
 
+import json
+
+def get_data(filename):
+    """
+    Get data from json file
+    :return: json data (dictionary)
+    """
+    # Opening JSON file
+    with open(filename, 'r') as openfile:
+        # Reading from json file
+        try:
+            return json.load(openfile)
+        except json.decoder.JSONDecodeError:
+            return dict()
+
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     app.setStyleSheet(StyleSheet)
-    w = MainWindow(app)
+
+    config = get_data('info.json')
+
+    w = MainWindow(app, config)
+
     w.show()
     app.exec()

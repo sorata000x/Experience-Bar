@@ -19,7 +19,6 @@ class ActionWindow(QWidget):
         self.panel = QWidget(self)
         self.panel.setObjectName('ActionWindow')
         self.panel.setGeometry(10, 0, 90, 150)
-
         # Toggle
         self.toggle = QWidget(self)
         self.toggle.setObjectName('ActionWindowToggle')

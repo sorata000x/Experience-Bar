@@ -3,8 +3,8 @@ from PyQt6.QtCore import QTimer, Qt, QPropertyAnimation, QEasingCurve
 from PyQt6.QtGui import QPixmap, QPalette, QColor, QPainter
 
 class ExpBarWindow(QWidget):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, config):
+        super().__init__()
         # Variable init
         self.offset = self.pos()
         self.timer = QTimer()
@@ -20,7 +20,8 @@ class ExpBarWindow(QWidget):
         self.button.setGeometry(1306, 14, 16, 16)
         self.button.close()
         # Exp bar
-        self.exp_bar = ExpBar(self)
+        self.exp_bar = ExpBar(parent=self)
+        self.exp_bar.setValue(config['exp'])
         self.exp_bar.setGeometry(10, 0, 1300, 50)
 
     def mousePressEvent(self, event):
@@ -93,17 +94,22 @@ class ExpBar(QWidget):
 
     def increase(self):
         if self.anim.state() == QPropertyAnimation.State.Stopped:   # wait for previous animation complete
+            percentage = (self.exp_bar.value() + 100) / self.exp_bar.maximum() * 100
+            self.exp_bar.setFormat(f'{self.exp_bar.value() + 100} [{percentage:.2f}%]')
             self.anim.setEndValue(self.exp_bar.value() + 100)
             self.anim.start()
-            percentage = self.exp_bar.value() / self.exp_bar.maximum() * 100
-            self.exp_bar.setFormat(f'{self.exp_bar.value()} [{percentage:.2f}%]')
 
     def decrease(self):
         if self.anim.state() == QPropertyAnimation.State.Stopped:   # wait for previous animation complete
+            percentage = (self.exp_bar.value() - 100) / self.exp_bar.maximum() * 100
+            self.exp_bar.setFormat(f'{self.exp_bar.value()} [{percentage:.2f}%]')
             self.anim.setEndValue(self.exp_bar.value() - 100)
             self.anim.start()
-            percentage = self.exp_bar.value() / self.exp_bar.maximum() * 100
-            self.exp_bar.setFormat(f'{self.exp_bar.value()} [{percentage:.2f}%]')
+
+    def setValue(self, value):
+        self.exp_bar.setValue(value)
+        percentage = self.exp_bar.value() / self.exp_bar.maximum() * 100
+        self.exp_bar.setFormat(f'{self.exp_bar.value()} [{percentage:.2f}%]')
 
 class Segments(QWidget):
     def __init__(self, parent=None):
