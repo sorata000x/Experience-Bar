@@ -20,32 +20,23 @@ To Do
 
 import sys
 from PyQt6.QtWidgets import QApplication
+from PyQt6.QtCore import QSettings
 from windows.main_window import MainWindow
 from stylesheet import StyleSheet
 
-import json
-
-def get_data(filename):
-    """
-    Get data from json file
-    :return: json data (dictionary)
-    """
-    # Opening JSON file
-    with open(filename, 'r') as openfile:
-        # Reading from json file
-        try:
-            return json.load(openfile)
-        except json.decoder.JSONDecodeError:
-            return dict()
-
+debug = True
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     app.setStyleSheet(StyleSheet)
 
-    config = get_data('info.json')
+    # config = get_data('info.json')
+    setting = QSettings('Game Logic', 'exp_bar')
 
-    w = MainWindow(app, config)
+    if debug:
+        print(setting.fileName())
+
+    w = MainWindow(app, setting)
 
     w.show()
     app.exec()
