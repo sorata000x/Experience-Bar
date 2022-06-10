@@ -21,8 +21,10 @@ class ExpBarWindow(QWidget):
         self.button.close()
         # Exp bar
         self.exp_bar = ExpBar(parent=self)
-        self.exp_bar.setValue(config['exp'])
         self.exp_bar.setGeometry(10, 0, 1300, 50)
+        #   User Config
+        self.exp_bar.setValue(config['exp'])  # Set user experience value
+        self.exp_bar.setLevel(config['level'])
 
     def mousePressEvent(self, event):
         """ Purpose: dragging window, close (hide) button. """
@@ -71,10 +73,8 @@ class ExpBar(QWidget):
         self.level_label.setObjectName('LevelLabel')
         self.level_label.setGeometry(0, 0, 70, 30)
         self.text_label = QLabel(self)
-        self.text_label.setText('Lv.101')
-        self.text_label.setStyleSheet("font-size: 20pt; font-weight: bold; color: #f5c722;")
-        self.text_label.setGeometry(10, 3, 60, 24)
-        # ------- EXP bar -------
+        self.setLevel(0)
+        # ------ EXP bar --------
         self.exp_bar = QProgressBar(self)
         self.exp_bar.setMinimum(0)
         self.exp_bar.setMaximum(1000)
@@ -110,6 +110,15 @@ class ExpBar(QWidget):
         self.exp_bar.setValue(value)
         percentage = self.exp_bar.value() / self.exp_bar.maximum() * 100
         self.exp_bar.setFormat(f'{self.exp_bar.value()} [{percentage:.2f}%]')
+
+    def setLevel(self, level):
+        self.text_label.setText(f'Lv. {level}')
+        self.text_label.setStyleSheet("font-size: 20pt; font-weight: bold; color: #f5c722;")
+        text_width = self.text_label.fontMetrics().boundingRect(self.text_label.text()).width()
+        print(f'text_width: {text_width}')
+        print(f'self.level_label.width(): {self.level_label.width()}')
+        self.text_label.move(int(30 - text_width / 2), 3)
+
 
 class Segments(QWidget):
     def __init__(self, parent=None):
