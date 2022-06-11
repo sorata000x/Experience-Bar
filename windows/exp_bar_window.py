@@ -1,6 +1,7 @@
-from PyQt6.QtWidgets import QWidget, QLabel, QProgressBar, QAbstractButton
-from PyQt6.QtCore import QTimer, Qt, QPropertyAnimation, QEasingCurve
-from PyQt6.QtGui import QPixmap, QPalette, QColor, QPainter
+from PyQt6.QtWidgets import QWidget, QLabel, QProgressBar, QAbstractButton, QGraphicsDropShadowEffect
+from PyQt6.QtCore import QTimer, Qt, QPropertyAnimation, QEasingCurve, QRectF, QPoint, QPointF
+from PyQt6.QtGui import QPixmap, QPalette, QColor, QPainter, QFont, QLinearGradient, QPen, QTextOption, QFontMetrics
+
 
 class ExpBarWindow(QWidget):
     def __init__(self, settings):
@@ -86,9 +87,10 @@ class ExpBar(QWidget):
         self.exp_bar.setMaximum(1000)
         self.exp_bar.setObjectName("ExpBar")
         self.exp_bar.setFormat('')
+
         self.exp_bar.setGeometry(70, 0, 1200, 30)
         palette = QPalette()
-        palette.setColor(QPalette.ColorRole.Text, QColor(200, 200, 200))
+        palette.setColor(QPalette.ColorRole.Text, QColor(0, 0, 0))
         self.exp_bar.setPalette(palette)
         self.anim = QPropertyAnimation(self.exp_bar, b"value")
         self.anim.setEasingCurve(QEasingCurve.Type.OutCubic)
@@ -96,57 +98,123 @@ class ExpBar(QWidget):
         # ------- Segments --------
         self.segments = Segments(self)
         self.segments.setGeometry(172, 0, 1300, 30)
+
+        # ------- Label Layer --------
+        self.label_layer = self.LabelLayer(self.exp_bar)
+
         # ------- Settings --------
         self.setValue(settings.value('value', 0))
         self.setLevel(settings.value('level', 1))
 
-    def increase(self):
+        self.increase_amount = settings.value('increase amount', int(self.exp_bar.maximum()/100))
+
+    class LabelLayer(QWidget):
+        def __init__(self, parent=None):
+            super().__init__(parent)
+
+            self.label = QLabel(self)
+            self.label.setStyleSheet("font-size: 13pt; color: rgb(220, 220, 220);")
+            shadow = QGraphicsDropShadowEffect()
+            shadow.setColor(QColor(30, 30, 30))
+            shadow.setOffset(1, 1)
+            shadow.setBlurRadius(5.0)
+            self.label.setGraphicsEffect(shadow)
+
+        def setText(self, text):
+            self.label.setText(text)
+            text_width = self.label.fontMetrics().boundingRect(self.label.text()).width()
+            self.label.setGeometry(int(600 - text_width / 2), 0, 1200, 30)
+
+    def levelUp(self, offset=1):
+        self.setValue(0)
+        self.setLevel(self.level + offset)
+        self.anim.disconnect()
+
+    def levelDown(self, offset=1):
+        if self.level == 1:     # minimum level
+            return
+        self.setValue(self.exp_bar.maximum())
+        self.setLevel(self.level - offset)
+        self.anim.disconnect()
+
+    def increase(self, offset=-1):
+        if offset < 0:
+            offset = self.increase_amount
         if self.anim.state() == QPropertyAnimation.State.Stopped:   # wait for previous animation complete
-            newValue = self.exp_bar.value() + 120 if self.exp_bar.value() + 120 < self.exp_bar.maximum() else self.exp_bar.maximum()
-            # Set new value label
-            percentage = newValue / self.exp_bar.maximum() * 100
-            self.exp_bar.setFormat(f'{self.exp_bar.value() + 100} [{percentage:.2f}%]')
+            newValue = self.exp_bar.value() + offset
+            self.value = newValue
+            maxOver = newValue - self.exp_bar.maximum() if newValue - self.exp_bar.maximum() > -1 else -1
             # Progress increase animation
             self.anim.setEndValue(newValue)
             self.anim.start()
-            if newValue == self.exp_bar.maximum():
-                self.anim.finished.connect(self.levelUp)
+            if maxOver >= 0:
+                # Set new value label
+                self.label_layer.setText(f'{self.exp_bar.maximum()} [{100:.2f}%]')
+                def levelUp():
+                    self.setLevel(self.level + 1)
+                    self.setValue(0)
+                    self.increase(maxOver)
+                    self.anim.disconnect()
+                self.anim.finished.connect(levelUp)
             else:
+                # Set new value label
+                percentage = newValue / self.exp_bar.maximum() * 100
+                self.label_layer.setText(f'{newValue} [{percentage:.2f}%]')
                 # Update setting
                 self.settings.setValue('value', newValue)
 
-    def levelUp(self):
-        self.setValue(0)
-        self.setLevel(self.level + 1)
-        self.anim.disconnect()
-
-    def decrease(self):
+    def decrease(self, offset=-1):
+        if offset < 0:
+            offset = self.increase_amount
         if self.anim.state() == QPropertyAnimation.State.Stopped:   # wait for previous animation complete
-            newValue = self.exp_bar.value() - 100
-            # Set new value label
-            percentage = newValue / self.exp_bar.maximum() * 100
-            self.exp_bar.setFormat(f'{self.exp_bar.value()} [{percentage:.2f}%]')
+            newValue = self.exp_bar.value() - offset
+            self.value = newValue
+            minOver = newValue if newValue < 0 else 0
             # Progress increase animation
             self.anim.setEndValue(newValue)
             self.anim.start()
-            # Update setting
-            self.settings.setValue('value', newValue)
+            if minOver < 0:
+                # Set new value label
+                self.label_layer.setText(f'{0} [{0:.2f}%]')
+                def levelDown():
+                    if self.level == 1:
+                        return
+                    self.setLevel(self.level - 1)
+                    self.setValue(self.exp_bar.maximum())
+                    self.decrease(-minOver)
+                    self.anim.disconnect()
+                self.anim.finished.connect(levelDown)
+            else:
+                # Set new value label
+                percentage = newValue / self.exp_bar.maximum() * 100
+                self.label_layer.setText(f'{newValue} [{percentage:.2f}%]')
+                # Update setting
+                self.settings.setValue('value', newValue)
 
     def setValue(self, value):
+        self.value = value
         self.exp_bar.setValue(value)
         percentage = self.exp_bar.value() / self.exp_bar.maximum() * 100
-        self.exp_bar.setFormat(f'{self.exp_bar.value()} [{percentage:.2f}%]')
+        self.label_layer.setText(f'{self.exp_bar.value()} [{percentage:.2f}%]')
         # Update setting
         self.settings.setValue('value', value)
+        if value >= self.exp_bar.maximum():
+            self.setLevel(self.level + 1)
+            self.setValue(0)
 
     def setLevel(self, level):
         self.level = level
         self.text_label.setText(f'Lv. {level}')
         self.text_label.setStyleSheet("font-size: 20pt; font-weight: bold; color: #f5c722;")
-        text_width = self.text_label.fontMetrics().boundingRect(self.text_label.text()).width()
-        self.text_label.move(int(30 - text_width / 2), 3)
+        font = QFont(QFont().defaultFamily(), 20)
+        fm = QFontMetrics(font)
+        width = fm.boundingRect(f'Lv. {level}').width()
+        self.text_label.setGeometry(int(36 - width / 2), 0, self.text_label.width(), self.text_label.height())
         # Update setting
         self.settings.setValue('level', level)
+
+    def setIncreaseAmount(self, increase_amount):
+        self.increase_amount = increase_amount
 
 class Segments(QWidget):
     def __init__(self, parent=None):

@@ -11,11 +11,10 @@ Doing
     -
 
 To Do
-    - make progress bar text easier to see
-    - design option, configuration interface
+    - design option, setting interface
     - make progress bar more smooth
     - design level and corresponding experience to level up
-    - store user info (experience amount, configuration)
+    - consider make an option/setting window instead of put in main window class
 """
 
 import sys
