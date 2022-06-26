@@ -1,31 +1,20 @@
-from PyQt6.QtWidgets import QMainWindow, QPushButton, QLabel, QSpinBox, QAbstractSpinBox, QLineEdit
 from PyQt6.QtCore import Qt
-from windows.exp_bar_window import ExpBarWindow
-from windows.action_window import ActionWindow
-from windows.area_select_window import AreaSelectWindow
+from PyQt6.QtGui import QIntValidator
+from PyQt6.QtWidgets import QWidget, QPushButton, QLabel, QLineEdit, QSpinBox
 
-class MainWindow(QMainWindow):
-    def __init__(self, app, setting):
-        super().__init__()
-        # Variable init
+
+class OptionWindow(QWidget):
+    def __init__(self, app, windows, parent=None):
+        super().__init__(parent)
+        # Variable Init
         self.app = app
+        self.windows = windows
+        self.exp_bar_window = windows['exp_bar_window']
+        self.action_window = windows['action_window']
+        self.area_select_window = windows['area_select_window']
+        self.skill_window = windows['skill_window']
         # Window config
         self.setWindowTitle('Option')
-        screen_size = app.primaryScreen().size()
-        self.setGeometry(int(screen_size.width()/2 - 100), int(screen_size.height()/2 - 100), 250, 300)
-        # Sub windows
-        # --- Experience bar window
-        self.exp_bar_window = ExpBarWindow(setting)
-        #self.exp_bar_window.setGeometry(64, 750, 1365, 44)
-        self.exp_bar_window.show()
-        # --- Action window
-        self.action_window = ActionWindow()
-        self.action_window.show()
-        self.action_window.plus_button.clicked.connect(lambda: self.exp_bar_window.exp_bar.increase())
-        self.action_window.minus_button.clicked.connect(lambda: self.exp_bar_window.exp_bar.decrease())
-        # --- Area selection window
-        self.area_select_window = AreaSelectWindow(lambda: self.exp_bar_window.exp_bar.increase(), app)
-        self.area_select_window.setGeometry(0, 0, screen_size.width(), screen_size.height())
         # Buttons
         # --- Select click area button
         self.define_click_area_button = QPushButton(self)
@@ -42,14 +31,23 @@ class MainWindow(QMainWindow):
         self.quit_button.clicked.connect(self.close)
         # --- Set Level
         self.level_label = QLabel(self)
-        self.level_label.setText('Level')
+        self.level_label.setText('Level: ')
         self.level_label.setGeometry(30, 130, 70, 30)
-        self.level_spin_box = QSpinBox(self)
-        self.level_spin_box.move(80, 130)
-        self.level_spin_box.setMaximum(999)
-        self.level_spin_box.setMinimum(1)
-        self.level_spin_box.setValue(self.exp_bar_window.exp_bar.level)
-        self.level_spin_box.valueChanged.connect(lambda: self.exp_bar_window.exp_bar.setLevel(self.level_spin_box.value()))
+        self.level_edit = QLineEdit(self)
+        # self.level_edit.setValidator(QRegularExpressionValidator(QRegularExpression("[0-9]{3}")))
+        self.level_edit.setValidator(QIntValidator(1, 999))
+        self.level_edit.setText(str(self.exp_bar_window.exp_bar.level))
+        self.level_edit.setGeometry(80, 130, 30, 30)
+        self.level_edit.setEnabled(False)
+        self.level_edit.returnPressed.connect(
+            lambda: self.exp_bar_window.exp_bar.setLevel(int(self.level_edit.text())))
+
+        # self.level_spin_box = QSpinBox(self)
+        # self.level_spin_box.move(80, 130)
+        # self.level_spin_box.setMaximum(999)
+        # self.level_spin_box.setMinimum(1)
+        # self.level_spin_box.setValue(self.exp_bar_window.exp_bar.level)
+        # self.level_spin_box.valueChanged.connect(lambda: self.exp_bar_window.exp_bar.setLevel(self.level_spin_box.value()))
         # --- Set Value
         self.value_label = QLabel(self)
         self.value_label.setText('Value')
@@ -76,15 +74,11 @@ class MainWindow(QMainWindow):
         self.increase_amount_box.textChanged.connect(
             lambda: self.exp_bar_window.exp_bar.setIncreaseAmount(int(self.increase_amount_box.text())))
 
-
-    # Windows
-
     def select_area(self):
         self.area_select_window.show()
         self.app.setOverrideCursor(Qt.CursorShape.CrossCursor)
 
-    # Events
-
     def closeEvent(self, event):
         self.exp_bar_window.close()
         self.action_window.close()
+        self.skill_window.close()

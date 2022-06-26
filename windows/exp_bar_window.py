@@ -198,9 +198,6 @@ class ExpBar(QWidget):
         self.label_layer.setText(f'{self.exp_bar.value()} [{percentage:.2f}%]')
         # Update setting
         self.settings.setValue('value', value)
-        if value >= self.exp_bar.maximum():
-            self.setLevel(self.level + 1)
-            self.setValue(0)
 
     def setLevel(self, level):
         self.level = level

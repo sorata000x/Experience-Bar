@@ -1,0 +1,9 @@
+(thought process)
+
+06.25.2022
+I decided to make the option window a separate window instead of as the main window, and I don't want the main
+window anymore so I moved the window calls to the main in the function 'start_windows', which makes more sense.
+
+06.17.2022
+To implement my own version of input dialog box, I think I need multithreading to wait for user input and there
+is a pyqt class QThread so gotta study for it.

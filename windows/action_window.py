@@ -41,7 +41,6 @@ class ActionWindow(QWidget):
         label.setText('〈')
         label.setStyleSheet("font-size: 18pt; color: #fff")
         label.setGeometry(-6, 60, 30, 30)
-
         # Button
         self.plus_button = QPushButton(self.panel)
         self.plus_button.setObjectName('PlusButton')
