@@ -1,6 +1,10 @@
 
 # ExpBar
-Experience Bar
+Game-like experience bar graphic interface.
+
+### Usage
+Click on the 'Select area' button to select a specific area which increase the experience value if clicked on.
+User can also increase or decrease the experience value by the button panel on the right side of screen.
 
 ### Environment
 - Developing OS: macOS Monterey
@@ -28,6 +32,9 @@ Option Panel
  - Quit program.
 
 ### Future
+
+ - Improve setting interface
+ - Implement experience for different skills
 
 ### Developer
 Sora Chen
