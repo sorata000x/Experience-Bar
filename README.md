@@ -2,6 +2,8 @@
 # ExpBar
 Game-like experience bar graphic interface.
 
+<image src="expbar_demo.gif" width="500"/>
+
 ### Usage
 Click on the 'Select area' button to select a specific area which increase the experience value if clicked on.
 User can also increase or decrease the experience value by the button panel on the right side of screen.
