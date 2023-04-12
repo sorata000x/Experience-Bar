@@ -37,4 +37,4 @@ Option Panel
  - Implement experience for different skills
 
 ### Developer
-Sora Chen
+Aiden Chen
